@@ -1,0 +1,182 @@
+// This sets us up for building a forge project - you need all of these
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+plugins {
+    id "com.matthewprenger.cursegradle" version "1.0.7"
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+// This is a simple flatdir repository for "uploadArchives" when you don't have a remote repo to target
+repositories {
+    flatDir {
+        name "fileRepo"
+        dirs "repo"
+    }
+	maven {
+        name 'DVS1 Maven FS'
+        url 'http://dvs1.progwml6.com/files/maven'
+    }
+}
+
+dependencies {
+    deobfCompile "mezz.jei:jei_1.10.2:3.7.6.232"
+}
+
+// This is our group. I'm cpw.mods
+group = "nl.makertim" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+// This is our actual project within the group. Note: FML has "fml" here. But this is bikemod.
+archivesBaseName = "bikemod"
+
+// Setup the forge minecraft plugin data. Specify the preferred forge/minecraft version here
+minecraft {
+    version = "1.10.2-12.18.1.2014"
+    mappings = "snapshot_20160715"
+    runDir = "run"
+}
+
+// BikeMod uses git tagging to mark major versions. This sets up the project version to that version data
+def versionInfo = getGitVersion()
+version = "${project.minecraft.version}-${versionInfo['BikeMod.version']}"
+
+curseforge {
+    apiKey = project.hasProperty('curseforge_apikey') ? project.curseforge_apikey : '0'
+    project {
+        id = '228756'
+        changelog = 'Empty'
+        releaseType = 'beta'
+    }
+}
+
+
+// This wrangles the resources for the jar files- stuff like textures and languages
+processResources
+{
+    // we're omitting the .xcf files - they're development only
+	exclude '**/*.xcf'
+    // we only want to do search/replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+	// generate version.properties file from the git version data earlier
+	doLast {
+		def propsFile = new File(destinationDir, 'version.properties')
+		def properties = new Properties()
+		properties.putAll(versionInfo)
+		properties['BikeMod.build.mcversion'] = project.minecraft.version
+		properties.store(propsFile.newWriter(), null)
+	}
+}
+
+// Configure an upload task. this is setup for uploading to files.minecraftforge.net. There are other examples around
+uploadArchives {
+    repositories.mavenDeployer {
+
+        dependsOn 'build'
+
+        if (project.hasProperty('forgeMavenPassword'))
+        {
+            repository(url: "http://files.minecraftforge.net/maven/manage/upload") {
+                authentication(userName: project.getProperty('forgeMavenUser'), password: project.getProperty('forgeMavenPassword')) // the elvis operator. look it up.
+            }
+        }
+        else
+        {
+            // local repo folder. Might wanna juset use  gradle install   if you wanans end it to maven-local
+            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
+        }
+        // This is just the pom data for the maven repo
+        pom {
+            groupId = project.group
+            // Force the maven upload to use the <mcversion>-<version> syntax preferred at files
+            version = "${project.version}"
+            artifactId = project.archivesBaseName
+            project {
+                name project.archivesBaseName
+                packaging 'jar'
+                description 'BikeMod'
+                url 'https://github.com/MakerTim/BikeMod'
+
+                scm {
+                    url 'https://github.com/MakerTim/BikeMod'
+                    connection 'scm:git:git://github.com/MakerTim/BikeMod.git'
+                    developerConnection 'scm:git:git@github.com:MakerTim/BikeMod.git'
+                }
+
+                issueManagement {
+                    system 'github'
+                    url 'https://github.com/MakerTim/BikeMod/issues'
+                }
+
+                licenses {
+                    license {
+                        name 'GNU Public License (GPL), Version 3.0'
+                        url 'http://www.gnu.org/licenses/gpl-3.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'mkt'
+                        name 'MakerTim'
+                        roles { role 'developer' }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// This is a special task for pulling the version information from git and the environment (for BUILD_NUMBER)
+def getGitVersion()
+{
+	def out = [:]
+
+	// call git command.
+	def outStream = new ByteArrayOutputStream()
+	def result = exec {
+		executable = 'git'
+		args = [ 'describe', '--long', "--match=[^(jenkins)]*"]
+		standardOutput = outStream
+	}
+
+	def fullVersion = outStream.toString().trim()
+	def matcher = fullVersion =~ /(\d+).(\d+)-(\d+)-(.*)/
+
+	def maj = matcher[0][1]
+	def min = matcher[0][2]
+	def rev = matcher[0][3]
+	def bn = System.getenv("PROMOTED_NUMBER") ?: System.getenv("BUILD_NUMBER") ?: "1"
+
+	out['BikeMod.build.major.number'] = maj.toString()
+	out['BikeMod.build.minor.number'] = min.toString()
+	out['BikeMod.build.revision.number'] = rev.toString()
+	out['BikeMod.build.githash'] = matcher[0][4].toString()
+	out['BikeMod.build.number' ] = bn.toString()
+	out['BikeMod.version' ] = "${maj}.${min}.${rev}.${bn}".toString()
+
+	return out
+}
