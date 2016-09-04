@@ -1,14 +1,14 @@
 [
 {
-  "modid": "ironchest",
-  "name": "Iron Chest",
-  "description": "New chests with larger sizes, with in-place upgrade items.\nThe feature chest is the crystal chest, which is transparent - some inventory contents are visible without opening the chest",
+  "modid": "bikemod",
+  "name": "Bike Mod",
+  "description": "A mod that just add bikes like in the original pokemon games",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "http://www.minecraftforum.net/topic/981855-",
+  "url": "",
   "updateUrl": "",
-  "authorList": ["cpw"],
-  "credits": "By cpw, based on an original idea by Lishid",
+  "authorList": ["MakerTim"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [
   ],
