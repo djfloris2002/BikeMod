@@ -46,11 +46,10 @@ minecraft {
     version = "1.10.2-12.18.1.2014"
     mappings = "snapshot_20160715"
     runDir = "run"
+	
+	replace "\${version}", project.version
+    replaceIn "ModInfo.java"
 }
-
-// BikeMod uses git tagging to mark major versions. This sets up the project version to that version data
-def versionInfo = getGitVersion()
-version = "${project.minecraft.version}-${versionInfo['BikeMod.version']}"
 
 curseforge {
     apiKey = project.hasProperty('curseforge_apikey') ? project.curseforge_apikey : '0'
@@ -148,35 +147,4 @@ uploadArchives {
             }
         }
     }
-}
-
-// This is a special task for pulling the version information from git and the environment (for BUILD_NUMBER)
-def getGitVersion()
-{
-	def out = [:]
-
-	// call git command.
-	def outStream = new ByteArrayOutputStream()
-	def result = exec {
-		executable = 'git'
-		args = [ 'describe', '--long', "--match=[^(jenkins)]*"]
-		standardOutput = outStream
-	}
-
-	def fullVersion = outStream.toString().trim()
-	def matcher = fullVersion =~ /(\d+).(\d+)-(\d+)-(.*)/
-
-	def maj = matcher[0][1]
-	def min = matcher[0][2]
-	def rev = matcher[0][3]
-	def bn = System.getenv("PROMOTED_NUMBER") ?: System.getenv("BUILD_NUMBER") ?: "1"
-
-	out['BikeMod.build.major.number'] = maj.toString()
-	out['BikeMod.build.minor.number'] = min.toString()
-	out['BikeMod.build.revision.number'] = rev.toString()
-	out['BikeMod.build.githash'] = matcher[0][4].toString()
-	out['BikeMod.build.number' ] = bn.toString()
-	out['BikeMod.version' ] = "${maj}.${min}.${rev}.${bn}".toString()
-
-	return out
 }
