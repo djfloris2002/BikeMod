@@ -3,11 +3,18 @@ package nl.makertim.bikemod;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IJumpingMount;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BikeEntity extends Entity implements IJumpingMount {
+public class BikeEntity extends Entity implements IJumpingMount, IWorldNameable {
+
+	private static final DataParameter<Float> DIRECTION = EntityDataManager.createKey(BikeEntity.class,
+		DataSerializers.FLOAT);
 
 	public BikeEntity(World world) {
 		super(world);
@@ -20,17 +27,17 @@ public class BikeEntity extends Entity implements IJumpingMount {
 
 	@Override
 	protected void entityInit() {
-
+		dataManager.register(DIRECTION, Float.valueOf(0.0F));
 	}
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbtTagCompound) {
-
+		super.readFromNBT(nbtTagCompound);
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbtTagCompound) {
-
+		super.writeToNBT(nbtTagCompound);
 	}
 
 	@Override
