@@ -1,7 +1,7 @@
 // This sets us up for building a forge project - you need all of these
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         maven {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
@@ -11,9 +11,6 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
-plugins {
-    id "com.matthewprenger.cursegradle" version "1.0.7"
-}
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven'
@@ -22,18 +19,9 @@ apply plugin: 'idea'
 
 // This is a simple flatdir repository for "uploadArchives" when you don't have a remote repo to target
 repositories {
-    flatDir {
-        name "fileRepo"
-        dirs "repo"
+    maven {
+        url "http://mobiusstrip.eu/maven"
     }
-	maven {
-        name 'DVS1 Maven FS'
-        url 'http://dvs1.progwml6.com/files/maven'
-    }
-}
-
-dependencies {
-    deobfCompile "mezz.jei:jei_1.10.2:3.7.6.232"
 }
 
 // This is our group. I'm cpw.mods
@@ -43,108 +31,23 @@ archivesBaseName = "bikemod"
 
 // Setup the forge minecraft plugin data. Specify the preferred forge/minecraft version here
 minecraft {
-    version = "1.10.2-12.18.1.2014"
-    mappings = "snapshot_20160715"
+    version = "1.10.2-12.18.1.2053"
+    mappings = "snapshot_20160518"
     runDir = "run"
-	
-	replace "\${version}", project.version
+
+    replace "\${version}", project.version
     replaceIn "ModInfo.java"
 }
 
-curseforge {
-    apiKey = project.hasProperty('curseforge_apikey') ? project.curseforge_apikey : '0'
-    project {
-        id = '228756'
-        changelog = 'Empty'
-        releaseType = 'beta'
-    }
-}
-
-
 // This wrangles the resources for the jar files- stuff like textures and languages
 processResources
-{
-    // we're omitting the .xcf files - they're development only
-	exclude '**/*.xcf'
-    // we only want to do search/replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-
-	// generate version.properties file from the git version data earlier
-	doLast {
-		def propsFile = new File(destinationDir, 'version.properties')
-		def properties = new Properties()
-		properties.putAll(versionInfo)
-		properties['BikeMod.build.mcversion'] = project.minecraft.version
-		properties.store(propsFile.newWriter(), null)
-	}
-}
-
-// Configure an upload task. this is setup for uploading to files.minecraftforge.net. There are other examples around
-uploadArchives {
-    repositories.mavenDeployer {
-
-        dependsOn 'build'
-
-        if (project.hasProperty('forgeMavenPassword'))
         {
-            repository(url: "http://files.minecraftforge.net/maven/manage/upload") {
-                authentication(userName: project.getProperty('forgeMavenUser'), password: project.getProperty('forgeMavenPassword')) // the elvis operator. look it up.
+            inputs.property "vars", project.version + project.minecraft.version
+            from(sourceSets.main.resources.srcDirs) {
+                include '**/*.info'
+                expand 'version': project.version, 'mcversion': project.minecraft.version
+            }
+            from(sourceSets.main.resources.srcDirs) {
+                exclude '**/*.info'
             }
         }
-        else
-        {
-            // local repo folder. Might wanna juset use  gradle install   if you wanans end it to maven-local
-            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
-        }
-        // This is just the pom data for the maven repo
-        pom {
-            groupId = project.group
-            // Force the maven upload to use the <mcversion>-<version> syntax preferred at files
-            version = "${project.version}"
-            artifactId = project.archivesBaseName
-            project {
-                name project.archivesBaseName
-                packaging 'jar'
-                description 'BikeMod'
-                url 'https://github.com/MakerTim/BikeMod'
-
-                scm {
-                    url 'https://github.com/MakerTim/BikeMod'
-                    connection 'scm:git:git://github.com/MakerTim/BikeMod.git'
-                    developerConnection 'scm:git:git@github.com:MakerTim/BikeMod.git'
-                }
-
-                issueManagement {
-                    system 'github'
-                    url 'https://github.com/MakerTim/BikeMod/issues'
-                }
-
-                licenses {
-                    license {
-                        name 'GNU Public License (GPL), Version 3.0'
-                        url 'http://www.gnu.org/licenses/gpl-3.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'mkt'
-                        name 'MakerTim'
-                        roles { role 'developer' }
-                    }
-                }
-            }
-        }
-    }
-}
