@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,6 +19,7 @@ public class BikeEntity extends Entity implements IJumpingMount, IWorldNameable 
 
 	public BikeEntity(World world) {
 		super(world);
+		setEntityBoundingBox(new AxisAlignedBB(0, 0, 0, 1, 1, 1));
 	}
 
 	public BikeEntity(World world, double x, double y, double z) {
@@ -32,12 +34,12 @@ public class BikeEntity extends Entity implements IJumpingMount, IWorldNameable 
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbtTagCompound) {
-		super.readFromNBT(nbtTagCompound);
+
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbtTagCompound) {
-		super.writeToNBT(nbtTagCompound);
+
 	}
 
 	@Override

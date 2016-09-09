@@ -8,10 +8,7 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -23,6 +20,9 @@ public class BikeItem extends Item {
 
 	public BikeItem() {
 		this.setCreativeTab(CreativeTabs.TRANSPORTATION);
+		this.setMaxStackSize(1);
+		this.setUnlocalizedName("bikes");
+		this.setRegistryName(new ResourceLocation(ModInfo.MOD_ID, "bikes"));
 	}
 
 	public EnumActionResult onItemUse(ItemStack itemstack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float v0, float v1, float v2) {
@@ -44,7 +44,7 @@ public class BikeItem extends Item {
 				} else {
 					if (!world.isRemote) {
 						world.setBlockToAir(placeLocation);
-						BikeEntity bike = new BikeEntity(world);
+						BikeEntity bike = new BikeEntity(world, x + 0.5D, y, z + 0.5D);
 						EntityArmorStand lvt_21_1_ = new EntityArmorStand(world, x + 0.5D, y, z + 0.5D);
 						float lvt_22_1_ = (float) MathHelper
 								.floor_float((MathHelper.wrapDegrees(player.rotationYaw - 180.0F) + 22.5F) / 45.0F)
