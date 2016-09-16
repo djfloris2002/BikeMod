@@ -39,7 +39,7 @@ public class BikeRender extends Render<BikeEntity> {
     protected void drawFrame(double x, double y, double z) {
         GlStateManager.translate(x * SCALE, y * SCALE, z * SCALE);
 
-        bindTexture(new ResourceLocation(ModInfo.MOD_ID, "textures/model/red.png"));
+        bindTexture(new ResourceLocation(ModInfo.MOD_ID, "textures/model/pink.png"));
         GL11.glRotated(70, 0, 0, 1);
 
         // Bar front wheel
@@ -63,7 +63,7 @@ public class BikeRender extends Render<BikeEntity> {
         GL11.glRotated(35, 1, 0, 0);
         drawPixels(14.1, 2, 4.4, 0.8, 3, 0.8);
         GL11.glRotated(35, -1, 0, 0);
-        bindTexture(new ResourceLocation(ModInfo.MOD_ID, "textures/model/red.png"));
+        bindTexture(new ResourceLocation(ModInfo.MOD_ID, "textures/model/pink.png"));
         GL11.glRotated(20, 0, 0, -1);
 
         // Chair bar
